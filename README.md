@@ -20,6 +20,16 @@ separation-of-duties workflows, and tamper-evident compliance verification.
 | Original prototype (frozen reference) | https://secure-sentinel-agent.lovable.app |
 | Source code | [`app/`](app/) directory in this repo |
 
+## Pricing
+
+| Plan | Price | What you get |
+|---|---|---|
+| Pro (monthly) | ₦45,000 / month | Full dashboard, guardrail engine, audit log, SIEM streaming, compliance evidence packs, priority email support |
+
+**Buy now:** https://kelick.lemonsqueezy.com/checkout/buy/8923afe4-a5f0-4802-bd64-e3da99a762f0
+
+Checkout, invoicing, and VAT are handled by [Lemon Squeezy](https://lemonsqueezy.com) as merchant of record.
+
 ## Release artifacts
 
 | File | Role | Contents |
