@@ -14,6 +14,10 @@ Source code: the [`app/`](app/) directory contains the full React source —
 web app (VS Code / any editor) plus a Capacitor Android project (Android Studio).
 See [app/README.md](app/README.md) for run instructions.
 
+Release artifacts at the repo root:
+- `sentinAI.zip` — *main* release: full source + Android Studio project (91 files)
+- `sentinAI-reserve.zip` — reserve: web-only source, lighter build (23 files)
+
 ---
 
 ## Table of Contents
