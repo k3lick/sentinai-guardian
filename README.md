@@ -6,7 +6,13 @@
 
 **SentinAI Guardian** is an enterprise-grade zero-trust governance and defense console for autonomous AI agents. It protects corporate environments from prompt injection, credential exfiltration, and rogue tool calls through real-time payload inspection, automated document quarantine, separation-of-duties workflows, and tamper-evident compliance verification.
 
-Live deployment: **[https://secure-sentinel-agent.lovable.app](https://secure-sentinel-agent.lovable.app)**
+Live deployment (verified production app): **https://antique-sentinai-shield-ops.base44.app**
+
+Original prototype (frozen, for reference): https://secure-sentinel-agent.lovable.app
+
+Source code: the [`app/`](app/) directory contains the full React source —
+web app (VS Code / any editor) plus a Capacitor Android project (Android Studio).
+See [app/README.md](app/README.md) for run instructions.
 
 ---
 
@@ -48,7 +54,7 @@ Live deployment: **[https://secure-sentinel-agent.lovable.app](https://secure-se
 
 ## Architecture & Routing
 
-SentinAI Guardian is built with **TanStack Router**, **React 18**, **TypeScript**, and **Tailwind CSS**. All production routes are pre-rendered and verified:
+The `app/` implementation is built with **React 18**, **Vite**, and **Tailwind CSS**. Views and routes:
 
 | Route | View Name | Description |
 |---|---|---|
@@ -79,7 +85,7 @@ SentinAI Guardian is built with **TanStack Router**, **React 18**, **TypeScript*
 ```bash
 # 1. Clone repository
 git clone https://github.com/malwar77/sentinai-guardian.git
-cd sentinai-guardian
+cd sentinai-guardian/app
 
 # 2. Install dependencies
 npm install
@@ -101,15 +107,19 @@ Under **Model Orchestration (`/models`)**, configure your local runtime:
 
 ## Deployment
 
-### Deploy to Lovable
-Changes pushed to the default branch automatically sync and rebuild through Lovable's managed CI/CD pipeline.
+### Production (Base44)
+The verified production app runs at https://antique-sentinai-shield-ops.base44.app with persistence, authentication, and the corrected guardrail engine.
 
 ### Self-Hosting (Vercel / Netlify / Cloudflare Pages)
-Run the production build:
+Run the production build from `app/`:
 ```bash
+cd app
 npm run build
 ```
 Deploy the generated `dist/` directory to any static hosting provider. Configure SPA rewrite rules to redirect all incoming traffic to `index.html`.
+
+### Android (Android Studio)
+The `app/android/` directory is a Capacitor Android project wrapping the web app as a native APK. Open `app/android` in Android Studio and press Run, or see [app/README.md](app/README.md) for the full workflow.
 
 ---
 

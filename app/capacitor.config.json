@@ -1,0 +1,9 @@
+{
+  "appId": "com.sentinai.security",
+  "appName": "SentinAI",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": false
+  }
+}
