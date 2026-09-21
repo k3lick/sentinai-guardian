@@ -4,6 +4,8 @@
 [![CI Build](https://github.com/malwar77/sentinai-guardian/actions/workflows/build.yml/badge.svg)](https://github.com/malwar77/sentinai-guardian/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#license)
 
+![SentinAI Banner](screenshots/banner.png)
+
 **SentinAI Guardian** is a compliance-first, zero-trust governance and defense
 console for autonomous AI agents. It protects corporate environments from
 prompt injection, credential exfiltration, and rogue tool calls through
@@ -28,6 +30,24 @@ separation-of-duties workflows, and tamper-evident compliance verification.
 
 Download either zip from the repo root, or clone the repo and use the
 [`app/`](app/) directory directly — it is the same code as `sentinAI.zip`.
+
+## Screenshots
+
+| Overview (dark) | Overview (light) | Guardrail Simulator |
+|---|---|---|
+| ![Overview dashboard, dark theme](screenshots/overview-dark.png) | ![Overview dashboard, light theme](screenshots/overview-light.png) | ![Guardrail simulator denying DROP TABLE](screenshots/guardrails.png) |
+
+| Document Quarantine | Incident Triage | Audit Log |
+|---|---|---|
+| ![Document quarantine scanning](screenshots/documents.png) | ![Incident management with SLA timers](screenshots/incidents.png) | ![Hash-chained audit log explorer](screenshots/audit-log.png) |
+
+| SIEM Streaming | Compliance | Approvals |
+|---|---|---|
+| ![SIEM live event streaming](screenshots/siem.png) | ![SOC 2 / ISO 27001 / GDPR evidence packs](screenshots/compliance.png) | ![Four-eyes approval queue](screenshots/approvals.png) |
+
+| Mobile |
+|---|
+| ![SentinAI on mobile](screenshots/mobile-app.png) |
 
 ## Prerequisites
 
