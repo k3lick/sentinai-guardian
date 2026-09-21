@@ -1,139 +1,233 @@
 # SentinAI Guardian
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Lovable_Production-emerald.svg)](https://secure-sentinel-agent.lovable.app)
-[![Architecture](https://img.shields.io/badge/Zero--Trust-Autonomous_AI_Agents-blue.svg)](#architecture)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Live App](https://img.shields.io/badge/Live_App-Base44_Production-emerald.svg)](https://antique-sentinai-shield-ops.base44.app)
+[![CI Build](https://github.com/malwar77/sentinai-guardian/actions/workflows/build.yml/badge.svg)](https://github.com/malwar77/sentinai-guardian/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#license)
 
-**SentinAI Guardian** is an enterprise-grade zero-trust governance and defense console for autonomous AI agents. It protects corporate environments from prompt injection, credential exfiltration, and rogue tool calls through real-time payload inspection, automated document quarantine, separation-of-duties workflows, and tamper-evident compliance verification.
+**SentinAI Guardian** is a compliance-first, zero-trust governance and defense
+console for autonomous AI agents. It protects corporate environments from
+prompt injection, credential exfiltration, and rogue tool calls through
+real-time payload inspection, automated document quarantine,
+separation-of-duties workflows, and tamper-evident compliance verification.
 
-Live deployment (verified production app): **https://antique-sentinai-shield-ops.base44.app**
+## Links
 
-Original prototype (frozen, for reference): https://secure-sentinel-agent.lovable.app
+| Resource | URL |
+|---|---|
+| Live app (verified production) | https://antique-sentinai-shield-ops.base44.app |
+| Original prototype (frozen reference) | https://secure-sentinel-agent.lovable.app |
+| Source code | [`app/`](app/) directory in this repo |
 
-Source code: the [`app/`](app/) directory contains the full React source —
-web app (VS Code / any editor) plus a Capacitor Android project (Android Studio).
-See [app/README.md](app/README.md) for run instructions.
+## Release artifacts
 
-Release artifacts at the repo root:
-- `sentinAI.zip` — *main* release: full source + Android Studio project (91 files)
-- `sentinAI-reserve.zip` — reserve: web-only source, lighter build (23 files)
-
----
-
-## Table of Contents
-
-- [Core Capabilities](#core-capabilities)
-- [Architecture & Routing](#architecture--routing)
-- [Application Views](#application-views)
-- [Local Development Setup](#local-development-setup)
-- [Deployment](#deployment)
-- [Security & Compliance Posture](#security--compliance-posture)
-- [License](#license)
-
----
-
-## Core Capabilities
-
-1. **Private Model Endpoint Orchestration (`/models`)**
-   - Direct integration with local inference backends (Ollama, LM Studio, vLLM).
-   - Real-time latency tracking (p50/p95), token velocity, consecutive failure counters, and automatic fallback switching.
-
-2. **Automated Document Quarantine (`/documents`)**
-   - Pre-execution scanning pipeline inspecting payloads for prompt injections, hardcoded API secrets, and sensitive PII.
-   - Immediate sandbox quarantine isolating untrusted artifacts prior to agent ingestion.
-
-3. **Enterprise Separation of Duties (`/approvals`)**
-   - Four-eyes approval workflows requiring secondary sign-off for quarantine releases, model rollbacks, and retention policy alterations.
-   - Immutable audit logging with reviewer notes and role badges.
-
-4. **Cryptographic Compliance Verification (`/compliance`)**
-   - Exportable compliance bundles with SHA-256 integrity checksums.
-   - Built-in verification engine validating that exported audit bundles have not been altered.
-
-5. **Normalized SIEM Streaming (`/siem`) & SLA Tracking (`/sla`)**
-   - Event normalization into CEF, ECS, and JSON formats for streaming to Splunk, Datadog, or Elastic.
-   - Tiered SLA countdown timers and escalation workflows for high-severity security incidents.
-
----
-
-## Architecture & Routing
-
-The `app/` implementation is built with **React 18**, **Vite**, and **Tailwind CSS**. Views and routes:
-
-| Route | View Name | Description |
+| File | Role | Contents |
 |---|---|---|
-| `/` | Overview Dashboard | Fleet health, active alerts, quarantine count, and recent events. |
-| `/models` | Model Orchestration | Local LLM endpoints, latency p50/p95 telemetry, and fallbacks. |
-| `/documents` | Quarantine & Scanning | File upload scanner, quarantine isolation, and finding breakdown. |
-| `/guardrails` | Policy Simulator | Tool-call simulation, prompt injection rules, and denial testing. |
-| `/incidents` | Incident Management | High-severity incident triage, root cause analysis, and assignment. |
-| `/approvals` | 4-Eyes Governance | Dual-sign-off queue for releases, policy changes, and rollbacks. |
-| `/sla` | SLA & Escalations | Countdown timers, response deadlines, and incident escalation stages. |
-| `/siem` | SIEM Streaming | Outbound event streaming in CEF, ECS, and JSON formats. |
-| `/compliance` | Compliance Verifier | SHA-256 package verification and audit evidence export. |
-| `/audit` | Audit Log Explorer | Searchable, filterable event history with role and timestamp filters. |
-| `/registry` | Model Version Registry | Compatibility matrices, deployment histories, and rollback triggers. |
-| `/governance` | Retention Policies | Data retention rules, dry-run simulation, and admin purge approvals. |
+| `sentinAI.zip` | **Main release** | Full source: React web app + Capacitor Android Studio project (91 files) |
+| `sentinAI-reserve.zip` | Reserve | Web-only source, lighter build (23 files) |
+| `grok-workspace.zip` | Legacy archive | Original workspace snapshot, kept for reference |
 
----
+Download either zip from the repo root, or clone the repo and use the
+[`app/`](app/) directory directly — it is the same code as `sentinAI.zip`.
 
-## Local Development Setup
+## Prerequisites
 
-### Prerequisites
+- **Node.js** v18.0.0 or higher (v20 recommended): https://nodejs.org
+- **Git**: https://git-scm.com
+- For Android builds: **Android Studio** with SDK 34 and JDK 17
 
-- **Node.js**: v18.0.0 or higher
-- **npm**, **pnpm**, or **bun**
-
-### Installation
+Verify your install before starting:
 
 ```bash
-# 1. Clone repository
+node -v    # should print v18.x or higher
+npm -v
+git --version
+```
+
+## Install and run — Windows (PowerShell)
+
+Open PowerShell and run:
+
+```powershell
+# 1. Clone the repository
 git clone https://github.com/malwar77/sentinai-guardian.git
-cd sentinai-guardian/app
+cd sentinai-guardian\app
 
 # 2. Install dependencies
 npm install
 
-# 3. Start local development server
+# 3. Start the development server
 npm run dev
 ```
 
-The application will launch at `http://localhost:5173`.
+The app launches at `http://localhost:5173`. Open it in any browser.
+First run: sign up with any email address — the verification code `659314`
+is displayed in the dev banner on the auth screen.
 
-### Connecting Local Inference Endpoints
+To produce a production build:
 
-Under **Model Orchestration (`/models`)**, configure your local runtime:
-- **Ollama**: `http://localhost:11434`
-- **LM Studio**: `http://localhost:1234/v1`
-- **vLLM**: `http://localhost:8000/v1`
+```powershell
+npm run build
+```
 
----
+The static bundle lands in `dist\` and can be served by any web server.
+
+## Install and run — Linux (bash)
+
+Open a terminal and run:
+
+```bash
+# 1. Install prerequisites (Debian/Ubuntu example)
+sudo apt update
+sudo apt install -y git curl
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# 2. Clone the repository
+git clone https://github.com/malwar77/sentinai-guardian.git
+cd sentinai-guardian/app
+
+# 3. Install dependencies
+npm install
+
+# 4. Start the development server
+npm run dev
+```
+
+The app launches at `http://localhost:5173`.
+Verification code for the first sign-up: `659314`.
+
+Production build:
+
+```bash
+npm run build
+# serve the dist/ folder with any static server, e.g.:
+npx serve dist
+```
+
+## Install and run — iOS
+
+Stock iOS does not ship a local terminal and cannot run Node.js natively,
+so there are two supported routes:
+
+**Option A — use the live app (no install):**
+Open https://antique-sentinai-shield-ops.base44.app in Safari, then tap
+*Share → Add to Home Screen*. The app runs as a full-screen web app with
+persistence kept in device storage.
+
+**Option B — run it from iOS via SSH (remote terminal):**
+Install a terminal app with SSH support (Termius, Blink Shell, or a-Shell),
+SSH into a Linux/macOS machine that has Node.js, then run the same Linux
+commands from the section above:
+
+```bash
+ssh youruser@your-server
+git clone https://github.com/malwar77/sentinai-guardian.git
+cd sentinai-guardian/app
+npm install
+npm run dev -- --host
+```
+
+The `--host` flag exposes the dev server on your network, so you can open
+`http://<server-lan-ip>:5173` in Safari on the iPhone.
+
+## Install and run — Android
+
+**Option A — Android Studio (full build):**
+
+1. Install Android Studio (SDK 34 + JDK 17): https://developer.android.com/studio
+2. Clone the repo:
+
+```bash
+git clone https://github.com/malwar77/sentinai-guardian.git
+```
+
+3. In Android Studio: *File → Open* → select `sentinai-guardian/app/android`
+4. Wait for Gradle sync to finish (first sync downloads dependencies)
+5. Press *Run* (▶) with an emulator or USB-connected device — the app
+   installs and launches as a native APK
+
+After changing web code, refresh the Android app:
+
+```bash
+cd sentinai-guardian/app
+npm run build
+npx cap sync android
+```
+
+Then re-run from Android Studio. A signed release APK is produced via
+*Build → Generate Signed Bundle / APK*.
+
+**Option B — Termux (terminal only, no Android Studio):**
+
+```bash
+pkg update && pkg install git nodejs -y
+git clone https://github.com/malwar77/sentinai-guardian.git
+cd sentinai-guardian/app
+npm install
+npm run dev -- --host
+```
+
+Open `http://127.0.0.1:5173` in Chrome on the same device.
+
+## Editor setup (VS Code)
+
+1. Open the `app/` folder in VS Code
+2. Recommended extensions: ESLint, Tailwind CSS IntelliSense, Prettier
+3. New terminal → `npm install && npm run dev`
+
+## Application views
+
+The `app/` implementation is built with **React 18**, **Vite**, and
+**Tailwind CSS**:
+
+| Route | View | Description |
+|---|---|---|
+| `/` | Overview Dashboard | Fleet health, active alerts, quarantine count, and recent events. |
+| `/orchestration` | Orchestration | Endpoint routing and bulk categorization. |
+| `/registry` | Model Registry | Endpoint registration, live probes, p50/p95 latency. |
+| `/documents` | Quarantine & Scanning | Content-based document scanning, quarantine isolation, finding breakdown. |
+| `/guardrails` | Policy Simulator | Tool-call simulation, prompt injection rules, verdict logging. |
+| `/incidents` | Incident Management | SEV-1/2/3 triage, SLA clocks, resolution tracking. |
+| `/sla` | SLA & Escalations | Countdown timers and escalation ladder. |
+| `/approvals` | 4-Eyes Governance | Human-approval queue for escalated verdicts. |
+| `/audit` | Audit Log Explorer | Tamper-evident hash-chained event history. |
+| `/siem` | SIEM Streaming | Normalized event stream with JSON export. |
+| `/governance` | Retention Policies | Tenant, retention, and policy ownership. |
+| `/compliance` | Compliance Verifier | SOC 2 / ISO 27001 / GDPR evidence packs from live records. |
+
+## What is verified in this implementation
+
+1. **Real guardrail engine** (`app/src/lib/engine.js`) — content-based verdicts:
+   `DROP TABLE customers;` → **DENIED** (DB-001), benign `SELECT` → **ALLOWED**
+   (DB-000), bulk exports (LIMIT 50000) → **HUMAN APPROVAL** (DB-020), prompt
+   injection → **DENIED** (PR-001). Unrecognized statements escalate, never
+   silently pass.
+2. **Persistence** (`app/src/lib/db.js`) — every evaluation fans out to
+   PolicyDecision, SIEM event, and AuditLog records; data survives reload.
+3. **Accurate metrics** — Overview numbers are computed from the records.
+   Nothing is hardcoded.
+4. **Tamper-evident audit chain** — each audit record hashes the previous
+   record; the sidebar shows live chain integrity.
+5. **Auth gate** — signup → email-code verification → session, mirroring the
+   production app.
 
 ## Deployment
 
-### Production (Base44)
-The verified production app runs at https://antique-sentinai-shield-ops.base44.app with persistence, authentication, and the corrected guardrail engine.
-
-### Self-Hosting (Vercel / Netlify / Cloudflare Pages)
-Run the production build from `app/`:
-```bash
-cd app
-npm run build
-```
-Deploy the generated `dist/` directory to any static hosting provider. Configure SPA rewrite rules to redirect all incoming traffic to `index.html`.
-
-### Android (Android Studio)
-The `app/android/` directory is a Capacitor Android project wrapping the web app as a native APK. Open `app/android` in Android Studio and press Run, or see [app/README.md](app/README.md) for the full workflow.
-
----
+- **Production (Base44):** the verified live app runs at
+  https://antique-sentinai-shield-ops.base44.app with persistence,
+  authentication, and the corrected guardrail engine.
+- **Self-hosting (Vercel / Netlify / Cloudflare Pages):** run
+  `npm run build` in `app/`, deploy the generated `dist/` directory, and
+  configure SPA rewrite rules to redirect all traffic to `index.html`.
+- **Android:** the `app/android/` Capacitor project builds a native APK via
+  Android Studio.
 
 ## Security & Compliance Posture
 
-- **Zero Untrusted Tool Execution**: Intercepts MCP and tool-calling interfaces prior to model execution.
-- **Tamper-Evident Logs**: Event manifests are signed with cryptographic SHA-256 checksums.
-- **Four-Eyes Gating**: Gated permissions ensure no single administrator can unquarantine infected data or bypass guardrails without independent review.
-
----
+- **Zero Untrusted Tool Execution**: intercepts tool-calling interfaces prior to model execution.
+- **Tamper-Evident Logs**: audit records are hash-chained; tampering flips the integrity indicator.
+- **Four-Eyes Gating**: escalated verdicts require independent human approval.
+- **Compliance-First Positioning**: SOC 2, ISO 27001, and GDPR evidence packs generated from live records.
 
 ## License
 
