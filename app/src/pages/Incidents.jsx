@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card, SectionTitle, SeverityBadge, Empty } from '../components/ui.jsx';
-import { create, update, list, appendAudit } from '../lib/db.js';
+import { create, update, list, appendAudit, SLA } from '../lib/db.js';
 import { notifyDbChanged, useDb } from '../components/ui.jsx';
 
 export default function Incidents({ dbRef }) {
@@ -12,7 +12,7 @@ export default function Incidents({ dbRef }) {
 
   function openIncident() {
     if (!title.trim()) return;
-    create(db, 'incidents', { sev, title, status: 'open', sla: { ack: '15m', resolve: sev === 'SEV-1' ? '4h' : '24h' } });
+    create(db, 'incidents', { sev, title, status: 'open', sla: { ...SLA[sev] } });
     appendAudit(db, 'INCIDENT_OPENED', `${sev}: ${title}`, sev === 'SEV-1' ? 'critical' : 'high');
     setTitle('');
     notifyDbChanged();

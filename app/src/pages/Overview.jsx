@@ -1,6 +1,6 @@
 import { Activity, ShieldAlert, ScanSearch, Siren } from 'lucide-react';
 import { Card, SectionTitle, StatCard, StatusBadge, SeverityBadge, Empty } from '../components/ui.jsx';
-import { metrics, list } from '../lib/db.js';
+import { metrics, list, nodeStatus } from '../lib/db.js';
 
 export default function Overview({ db, setPage }) {
   const m = metrics(db);
@@ -52,7 +52,7 @@ export default function Overview({ db, setPage }) {
               </div>
               <div className="text-right">
                 <p className="text-xs text-slate-400 font-mono">p50 {e.p50 ?? '—'} · p95 {e.p95 ?? '—'}</p>
-                <StatusBadge status={e.status} />
+                <StatusBadge status={nodeStatus(e)} />
               </div>
             </div>
           ))}

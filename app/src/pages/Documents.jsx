@@ -90,7 +90,7 @@ export default function Documents({ dbRef }) {
       </div>
 
       <Card>
-        <SectionTitle title="Scan findings" sub={`${findings.filter((f) => f.severity === 'critical').length} critical across ${new Set(findings.map((f) => f.documentId)).size} document(s)`} />
+        <SectionTitle title="Scan findings" sub={`${findings.filter((f) => f.severity === 'critical').length} critical · ${findings.filter((f) => f.severity === 'high').length} high across ${docs.length} document(s)`} />
         {findings.length === 0 ? <Empty>No findings yet — run a scenario or ingest a document.</Empty> : (
           <div className="space-y-2">
             {findings.map((f) => (

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card, SectionTitle, StatusBadge, Empty } from '../components/ui.jsx';
-import { create, update, list, appendAudit } from '../lib/db.js';
+import { create, update, list, appendAudit, nodeStatus } from '../lib/db.js';
 import { notifyDbChanged, useDb } from '../components/ui.jsx';
 
 export default function ModelRegistry({ dbRef }) {
@@ -59,7 +59,7 @@ export default function ModelRegistry({ dbRef }) {
                   <p className="text-xs text-slate-500 font-mono">p50 {e.p50 ?? '—'}ms · p95 {e.p95 ?? '—'}ms</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <StatusBadge status={e.p95 == null ? 'offline' : e.status} />
+                  <StatusBadge status={nodeStatus(e)} />
                   <button className="btn-ghost" onClick={() => probe(e.id)}>Probe</button>
                 </div>
               </div>

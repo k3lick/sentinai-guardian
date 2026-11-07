@@ -17,7 +17,7 @@ const PROMPT_CHIPS = [
   'Summarize the vendor onboarding runbook'
 ];
 
-export default function Guardrails({ dbRef }) {
+export default function Guardrails({ dbRef, user }) {
   const force = useDb();
   const [tool, setTool] = useState('Database query');
   const [statement, setStatement] = useState('');
@@ -26,10 +26,13 @@ export default function Guardrails({ dbRef }) {
   const [promptVerdict, setPromptVerdict] = useState(null);
 
   const db = dbRef.current;
+  // The requester is whoever runs the evaluation — separation of duties
+  // means they cannot later approve their own escalated verdict.
+  const requester = user?.login || 'unknown';
 
   function runEvaluation(stmt, tl) {
     const v = evaluate(stmt, tl);
-    recordVerdict(db, v);
+    recordVerdict(db, v, requester);
     setVerdict({ ...v, at: new Date() });
     notifyDbChanged();
     force();
@@ -37,7 +40,7 @@ export default function Guardrails({ dbRef }) {
 
   function runPrompt() {
     const v = evaluate(prompt, 'Prompt');
-    recordVerdict(db, v);
+    recordVerdict(db, v, requester);
     setPromptVerdict({ ...v, at: new Date() });
     notifyDbChanged();
     force();
@@ -133,6 +136,12 @@ export default function Guardrails({ dbRef }) {
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-[10px] text-slate-500">{d.tool} · {d.rule}</span>
                     <SeverityBadge level={d.severity} />
+                    {d.verdict === 'human' && d.status === 'pending' && (
+                      <span className="text-[10px] text-med font-mono">AWAITING APPROVAL</span>
+                    )}
+                    {d.verdict === 'human' && d.status !== 'pending' && (
+                      <span className="text-[10px] text-slate-500 font-mono">{d.status.toUpperCase()} by {d.decidedBy}</span>
+                    )}
                   </div>
                 </div>
               ))}

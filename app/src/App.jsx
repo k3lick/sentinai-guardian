@@ -28,14 +28,14 @@ export default function App() {
         chainIntact={m.chainIntact} />
       <main className="flex-1 min-w-0 p-6 lg:p-8">
         {page === 'overview' && <Overview db={dbRef.current} setPage={setPage} />}
-        {page === 'guardrails' && <Guardrails dbRef={dbRef} />}
+        {page === 'guardrails' && <Guardrails dbRef={dbRef} user={user} />}
         {page === 'documents' && <Documents dbRef={dbRef} />}
         {page === 'incidents' && <Incidents dbRef={dbRef} />}
         {page === 'audit' && <AuditLog dbRef={dbRef} />}
         {page === 'registry' && <ModelRegistry dbRef={dbRef} />}
         {page === 'siem' && <Siem dbRef={dbRef} />}
         {['orchestration', 'sla', 'approvals', 'governance', 'compliance', 'settings'].includes(page) && (
-          <Simple dbRef={dbRef} page={page} />
+          <Simple dbRef={dbRef} page={page} user={user} />
         )}
       </main>
     </div>
