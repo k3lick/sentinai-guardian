@@ -11,8 +11,6 @@ import Simple from './pages/Simple.jsx';
 import AuthGate from './auth/AuthGate.jsx';
 import { load, metrics } from './lib/db.js';
 
-const DEV_CODE = '659314'; // simulated email-verification code (shown in the UI)
-
 export default function App() {
   const dbRef = useRef(null);
   if (!dbRef.current) dbRef.current = load();
@@ -21,10 +19,10 @@ export default function App() {
   const [page, setPage] = useNav();
   const m = useMemo(() => metrics(dbRef.current), [page, user]);
 
-  if (!user) return <AuthGate onAuthed={setUser} devCode={DEV_CODE} />;
+  if (!user) return <AuthGate onAuthed={setUser} />;
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-ink-950">
       <Sidebar page={page} setPage={setPage} user={user}
         onLogout={() => { localStorage.removeItem('sentinai.session'); setUser(null); }}
         chainIntact={m.chainIntact} />
@@ -48,7 +46,7 @@ function useSession() {
   const [user, setUser] = useReactState(() => {
     try {
       const session = JSON.parse(localStorage.getItem('sentinai.session') || 'null');
-      return session ? { email: session.email } : null;
+      return session ? { login: session.login, name: session.name, avatar_url: session.avatar_url } : null;
     } catch { return null; }
   });
   return [user, setUser];

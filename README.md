@@ -91,8 +91,8 @@ npm run dev
 ```
 
 The app launches at `http://localhost:5173`. Open it in any browser.
-First run: sign up with any email address — the verification code `659314`
-is displayed in the dev banner on the auth screen.
+First run: sign in with your GitHub account — click **Continue with GitHub**
+and enter the device code shown on screen at github.com/login/device.
 
 To produce a production build:
 
@@ -125,7 +125,8 @@ npm run dev
 ```
 
 The app launches at `http://localhost:5173`.
-Verification code for the first sign-up: `659314`.
+Sign-in is via your GitHub account — click **Continue with GitHub** and
+enter the device code shown on screen at github.com/login/device.
 
 Production build:
 
@@ -239,15 +240,34 @@ The `app/` implementation is built with **React 18**, **Vite**, and
    Nothing is hardcoded.
 4. **Tamper-evident audit chain** — each audit record hashes the previous
    record; the sidebar shows live chain integrity.
-5. **Auth gate** — signup → email-code verification → session, mirroring the
+5. **Auth gate** — GitHub device-flow sign-in → session, mirroring the
    production app.
+
+## Authentication
+
+Sign-in is via GitHub only — there is no email/password signup and no demo
+code. Click **Continue with GitHub** and the app shows a device code; enter
+it at https://github.com/login/device and authorize the **SentinAI
+Guardian** OAuth App. The app polls until GitHub grants the token, then
+fetches your profile (`read:user` scope) and stores the session in the
+browser's localStorage. Log out clears it.
+
+GitHub's login endpoints send no CORS headers, so the browser cannot call
+them directly. Device-flow calls go through a minimal Cloudflare Worker
+relay that adds CORS headers and forwards the request to GitHub:
+
+- **Relay:** https://sentinai-auth.100kelick.workers.dev
+  (`/device/code` and `/access_token`; source in `~/workspace/sentinai-auth/`)
+- **Config:** all auth settings live in one place, `app/src/lib/githubConfig.js`
+  (client id, relay URL, scope, session key). The OAuth App uses Device Flow
+  with no client secret — none is needed or stored anywhere.
 
 ## Deployment
 
 - **Live app (GitHub Pages):** every push to `main` builds the app and
   deploys it to https://k3lick.github.io/sentinai-guardian/ via the
-  `Deploy to GitHub Pages` workflow. Sign up with any email address —
-  the verification code `659314` is shown on the auth screen.
+  `Deploy to GitHub Pages` workflow. Sign in with your GitHub account —
+  see Authentication above.
 - **Production (Base44):** the verified live app also runs at
   https://antique-sentinai-shield-ops.base44.app with persistence,
   authentication, and the corrected guardrail engine.

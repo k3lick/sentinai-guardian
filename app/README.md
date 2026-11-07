@@ -39,9 +39,9 @@ Then re-run from Android Studio. Build a release APK with:
 
 Requirements: Node 18+, Android Studio with SDK 34 and JDK 17.
 
-First run: sign up with any email. The verification code is displayed in the
-dev banner on the auth screen (`659314`). Log out and back in with the same
-credentials afterwards.
+First run: sign in with your GitHub account — click **Continue with GitHub**
+and enter the device code shown on screen at github.com/login/device.
+The session persists in the browser; log out clears it.
 
 ## What works (verified against the live app)
 
@@ -62,7 +62,7 @@ credentials afterwards.
 4. **Tamper-evident audit chain** — each audit record hashes the previous
    record's hash. The sidebar shows live chain integrity; edit a record in
    localStorage and it flips to TAMPERED.
-5. **Auth gate** — signup → email-code verification → session, mirroring the
+5. **Auth gate** — GitHub device-flow sign-in → session, mirroring the
    live app's flow.
 
 ## Layout
@@ -71,7 +71,9 @@ credentials afterwards.
 src/
   lib/engine.js      guardrail / policy engine (pure, unit-testable)
   lib/db.js          persistence, hash chain, metrics, seed data
-  auth/AuthGate.jsx  signup / verification / login
+  lib/githubAuth.js  GitHub device-flow helpers (relay + profile + session)
+  lib/githubConfig.js  auth config (client id, relay URL, scope, session key)
+  auth/AuthGate.jsx  GitHub device-flow sign-in
   components/        Sidebar + shared UI primitives
   pages/             Overview, Guardrails, Documents, Incidents,
                      Model Registry, Audit Log, SIEM Streaming, + light sections
@@ -81,7 +83,7 @@ src/
 
 - Swap the storage adapter in `lib/db.js` (`setAdapter`) for a REST client;
   collections already mirror the entity shapes used by the Base44 app.
-- Replace the simulated verification code with an email provider.
+- Sessions are browser-only today; move them server-side for multi-device use.
 - Use SHA-256 (`crypto.subtle`) for the audit chain instead of FNV-1a.
 - Add per-user record scoping (`createdBy`) enforcement on the server.
 
@@ -92,4 +94,4 @@ src/
 | `DROP TABLE` verdict | HUMAN APPROVAL (DB-014 PII review — wrong rule) | DENIED, DB-001, HIGH |
 | Persistence | none (counters reset) | all verdicts/audits/SIEM stored |
 | Metrics | hardcoded (96% availability with 0 healthy nodes) | computed from records |
-| Auth | none | signup/verification/login |
+| Auth | none | GitHub device-flow sign-in |
