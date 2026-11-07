@@ -1,6 +1,8 @@
 import { useState as useReactState, useMemo, useRef } from 'react';
 import Sidebar from './components/Sidebar.jsx';
 import Overview from './pages/Overview.jsx';
+import Agents from './pages/Agents.jsx';
+import UserGuide from './pages/UserGuide.jsx';
 import Guardrails from './pages/Guardrails.jsx';
 import Documents from './pages/Documents.jsx';
 import Incidents from './pages/Incidents.jsx';
@@ -32,6 +34,8 @@ export default function App() {
             errored once does not stay stuck after the user moves away. */}
         <ErrorBoundary key={page} onReset={() => setPage('overview')}>
           {page === 'overview' && <Overview db={dbRef.current} setPage={setPage} />}
+          {page === 'agents' && <Agents dbRef={dbRef} user={user} />}
+          {page === 'guide' && <UserGuide />}
           {page === 'guardrails' && <Guardrails dbRef={dbRef} user={user} />}
           {page === 'documents' && <Documents dbRef={dbRef} />}
           {page === 'incidents' && <Incidents dbRef={dbRef} />}

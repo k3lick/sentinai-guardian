@@ -1,11 +1,12 @@
 import {
-  LayoutDashboard, Workflow, Boxes, FileText, Shield as ShieldIcon, AlertTriangle,
-  Timer, UserCheck, ScrollText, Radio, Landmark, Scale, Settings, LogOut
+  LayoutDashboard, Bot, Workflow, Boxes, FileText, Shield as ShieldIcon, AlertTriangle,
+  Timer, UserCheck, ScrollText, Radio, Landmark, Scale, BookOpen, Settings, LogOut
 } from 'lucide-react';
 import Shield from './Shield.jsx';
 
 const NAV = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { id: 'agents', label: 'Agents', icon: Bot },
   { id: 'orchestration', label: 'Orchestration', icon: Workflow },
   { id: 'registry', label: 'Model Registry', icon: Boxes },
   { id: 'documents', label: 'Documents', icon: FileText },
@@ -17,6 +18,7 @@ const NAV = [
   { id: 'siem', label: 'SIEM Streaming', icon: Radio },
   { id: 'governance', label: 'Governance', icon: Landmark },
   { id: 'compliance', label: 'Compliance', icon: Scale },
+  { id: 'guide', label: 'User Guide', icon: BookOpen },
   { id: 'settings', label: 'Settings', icon: Settings }
 ];
 

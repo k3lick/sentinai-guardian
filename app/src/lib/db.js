@@ -6,7 +6,7 @@
  * the app at a real backend — the rest of the code only talks to `db`.
  *
  * Collections: endpoints, documents, findings, incidents, policyDecisions,
- *              siemEvents, auditLog, users, session
+ *              siemEvents, auditLog, users, session, agents
  *
  * Audit records are hash-chained for tamper evidence (see appendAudit).
  */
@@ -79,8 +79,31 @@ export function verifyChain(log) {
 // status is a pending approval, so backfill it — otherwise the Approvals
 // page treated it as "decided" and crashed rendering `status.toUpperCase()`
 // on undefined (blank page, whole app unmounted). Runs once, on load.
+// The first agent. Shared by seed() and migrate() so a fresh db and a
+// legacy db (seeded before the agents collection existed) get the exact
+// same record. Nothing is invented here: no exchange, no model name, no
+// spend-limit figure, no live status — unset fields stay "not set".
+export function seedAetherbot() {
+  return {
+    name: 'aetherbot',
+    role: 'Autonomous crypto trading bot',
+    repo: 'github.com/k3lick/aetherbot',
+    status: 'active',
+    model: 'not set',
+    tools: [],
+    spendLimit: 'not set',
+    createdBy: 'system@acme-core.example'
+  };
+}
+
 function migrate(db) {
   let changed = false;
+  // Dbs seeded before the agents collection existed get the seeded agent.
+  if (db.agents == null) {
+    db.agents = [];
+    createAgent(db, seedAetherbot(), 'system@acme-core.example');
+    changed = true;
+  }
   for (const d of db.policyDecisions || []) {
     if (d.status == null) {
       d.status = d.verdict === 'human' ? 'pending' : 'decided';
@@ -178,6 +201,61 @@ export function decideVerdict(db, id, decision, approver) {
   return { ok: true };
 }
 
+// --- agents -----------------------------------------------------------------
+// Create an agent. Name is required and unique (case-insensitive).
+// On failure returns { ok:false, error } with a plain message; on success
+// persists the record, writes a SIEM event and a hash-chained audit entry.
+export function createAgent(db, fields, createdBy) {
+  const name = ((fields && fields.name) || '').trim();
+  if (!name) return { ok: false, error: 'Agent name is required.' };
+  const existing = list(db, 'agents');
+  if (existing.some((a) => ((a.name || '').trim().toLowerCase() === name.toLowerCase()))) {
+    return { ok: false, error: `An agent named "${name}" already exists.` };
+  }
+  const status = fields.status === 'paused' ? 'paused' : 'active';
+  const tools = Array.isArray(fields.tools) ? fields.tools.filter((t) => (t || '').trim()) : [];
+  const agent = create(db, 'agents', {
+    name,
+    role: ((fields.role || '').trim() || 'not set'),
+    model: ((fields.model || '').trim() || 'not set'),
+    tools,
+    spendLimit: ((fields.spendLimit || '').trim() || 'not set'),
+    status,
+    repo: ((fields.repo || '').trim() || null),
+    createdBy: fields.createdBy || createdBy || 'system@acme-core.example',
+    createdAt: new Date().toISOString()
+  });
+  create(db, 'siemEvents', {
+    type: 'AGENT_CREATED',
+    message: `${name}: agent created`,
+    severity: 'low'
+  });
+  appendAudit(db, 'AGENT_CREATED', `${name}: agent created by ${agent.createdBy}`, 'low');
+  return { ok: true, agent };
+}
+
+// Pause / resume an agent. Writes a SIEM event and a hash-chained audit
+// entry (AGENT_PAUSED / AGENT_RESUMED) so the toggle shows up in the
+// Audit Log and the SIEM stream.
+export function setAgentStatus(db, id, status, actor) {
+  const rec = (db.agents || []).find((r) => r.id === id);
+  if (!rec) return { ok: false, error: 'Agent not found.' };
+  if (status !== 'active' && status !== 'paused') {
+    return { ok: false, error: 'Invalid status.' };
+  }
+  if (rec.status === status) return { ok: true, agent: rec };
+  rec.status = status;
+  save(db);
+  const type = status === 'paused' ? 'AGENT_PAUSED' : 'AGENT_RESUMED';
+  create(db, 'siemEvents', {
+    type,
+    message: `${rec.name}: agent ${status}`,
+    severity: 'low'
+  });
+  appendAudit(db, type, `${rec.name}: agent ${status} by ${actor || 'system@acme-core.example'}`, 'low');
+  return { ok: true, agent: rec };
+}
+
 export function appendAudit(db, type, message, severity = 'medium') {
   const log = db.auditLog || [];
   const prev = log.length ? log[0].hash : 'GENESIS'; // log is newest-first
@@ -208,6 +286,7 @@ export function metrics(db) {
   const findings = list(db, 'findings');
   const incidents = list(db, 'incidents');
   const decisions = list(db, 'policyDecisions');
+  const agents = list(db, 'agents');
 
   const sev = (arr, s) => arr.filter((x) => x.severity === s).length;
 
@@ -225,6 +304,8 @@ export function metrics(db) {
     denied: decisions.filter((d) => d.verdict === 'deny').length,
     escalated: decisions.filter((d) => d.verdict === 'human' && d.status === 'pending').length,
     allowed: decisions.filter((d) => d.verdict === 'allow').length,
+    agentsTotal: agents.length,
+    agentsActive: agents.filter((a) => a.status === 'active').length,
     chainIntact: verifyChain(list(db, 'auditLog'))
   };
 }
@@ -243,8 +324,12 @@ function seed() {
     siemEvents: [],
     auditLog: [],
     users: [],
-    session: null
+    session: null,
+    agents: []
   };
+
+  // First agent, via the real write path so the audit trail records it.
+  createAgent(db, seedAetherbot(), 'system@acme-core.example');
 
   // seed history the same way the live app did — through the real engine.
   // Requesters are agent identities, never a signed-in user, so the seeded

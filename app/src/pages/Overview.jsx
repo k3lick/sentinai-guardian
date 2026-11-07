@@ -1,4 +1,4 @@
-import { Activity, ShieldAlert, ScanSearch, Siren } from 'lucide-react';
+import { Activity, Bot, ShieldAlert, ScanSearch, Siren } from 'lucide-react';
 import { Card, SectionTitle, StatCard, StatusBadge, SeverityBadge, Empty } from '../components/ui.jsx';
 import { metrics, list, nodeStatus } from '../lib/db.js';
 
@@ -18,11 +18,13 @@ export default function Overview({ db, setPage }) {
         <StatusBadge status={m.degraded ? 'DEGRADED' : 'NOMINAL'} />
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
         <StatCard icon={Activity} label="Fleet availability"
           value={`${m.fleetAvailability}%`}
           hint={`${m.healthy} healthy · ${m.degraded} degraded · ${m.offline} offline · avg p95 ${m.avgP95}ms`}
           accent={m.fleetAvailability === 100 ? 'text-ok' : 'text-med'} />
+        <StatCard icon={Bot} label="Agents"
+          value={m.agentsTotal} hint={`${m.agentsActive} active`} accent="text-ok" />
         <StatCard icon={ShieldAlert} label="Quarantine volume"
           value={m.quarantine} hint={`${m.docsClean} clean · ${m.docsTotal} total docs`} accent="text-high" />
         <StatCard icon={ScanSearch} label="Scan findings"
