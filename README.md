@@ -1,7 +1,7 @@
 # SentinAI Guardian
 
-[![Live App](https://img.shields.io/badge/Live_App-Base44_Production-emerald.svg)](https://antique-sentinai-shield-ops.base44.app)
-[![CI Build](https://github.com/malwar77/sentinai-guardian/actions/workflows/build.yml/badge.svg)](https://github.com/malwar77/sentinai-guardian/actions)
+[![Live App](https://img.shields.io/badge/Live_App-GitHub_Pages-emerald.svg)](https://k3lick.github.io/sentinai-guardian/)
+[![CI Build](https://github.com/k3lick/sentinai-guardian/actions/workflows/build.yml/badge.svg)](https://github.com/k3lick/sentinai-guardian/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#license)
 
 ![SentinAI Banner](screenshots/banner.png)
@@ -16,7 +16,8 @@ separation-of-duties workflows, and tamper-evident compliance verification.
 
 | Resource | URL |
 |---|---|
-| Live app (verified production) | https://antique-sentinai-shield-ops.base44.app |
+| Live app (GitHub Pages) | https://k3lick.github.io/sentinai-guardian/ |
+| Live app (Base44, alternate) | https://antique-sentinai-shield-ops.base44.app |
 | Original prototype (frozen reference) | https://secure-sentinel-agent.lovable.app |
 | Source code | [`app/`](app/) directory in this repo |
 
@@ -79,7 +80,7 @@ Open PowerShell and run:
 
 ```powershell
 # 1. Clone the repository
-git clone https://github.com/malwar77/sentinai-guardian.git
+git clone https://github.com/k3lick/sentinai-guardian.git
 cd sentinai-guardian\app
 
 # 2. Install dependencies
@@ -113,7 +114,7 @@ curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 
 # 2. Clone the repository
-git clone https://github.com/malwar77/sentinai-guardian.git
+git clone https://github.com/k3lick/sentinai-guardian.git
 cd sentinai-guardian/app
 
 # 3. Install dependencies
@@ -140,7 +141,7 @@ Stock iOS does not ship a local terminal and cannot run Node.js natively,
 so there are two supported routes:
 
 **Option A — use the live app (no install):**
-Open https://antique-sentinai-shield-ops.base44.app in Safari, then tap
+Open https://k3lick.github.io/sentinai-guardian/ in Safari, then tap
 *Share → Add to Home Screen*. The app runs as a full-screen web app with
 persistence kept in device storage.
 
@@ -151,7 +152,7 @@ commands from the section above:
 
 ```bash
 ssh youruser@your-server
-git clone https://github.com/malwar77/sentinai-guardian.git
+git clone https://github.com/k3lick/sentinai-guardian.git
 cd sentinai-guardian/app
 npm install
 npm run dev -- --host
@@ -168,7 +169,7 @@ The `--host` flag exposes the dev server on your network, so you can open
 2. Clone the repo:
 
 ```bash
-git clone https://github.com/malwar77/sentinai-guardian.git
+git clone https://github.com/k3lick/sentinai-guardian.git
 ```
 
 3. In Android Studio: *File → Open* → select `sentinai-guardian/app/android`
@@ -191,7 +192,7 @@ Then re-run from Android Studio. A signed release APK is produced via
 
 ```bash
 pkg update && pkg install git nodejs -y
-git clone https://github.com/malwar77/sentinai-guardian.git
+git clone https://github.com/k3lick/sentinai-guardian.git
 cd sentinai-guardian/app
 npm install
 npm run dev -- --host
@@ -243,7 +244,11 @@ The `app/` implementation is built with **React 18**, **Vite**, and
 
 ## Deployment
 
-- **Production (Base44):** the verified live app runs at
+- **Live app (GitHub Pages):** every push to `main` builds the app and
+  deploys it to https://k3lick.github.io/sentinai-guardian/ via the
+  `Deploy to GitHub Pages` workflow. Sign up with any email address —
+  the verification code `659314` is shown on the auth screen.
+- **Production (Base44):** the verified live app also runs at
   https://antique-sentinai-shield-ops.base44.app with persistence,
   authentication, and the corrected guardrail engine.
 - **Self-hosting (Vercel / Netlify / Cloudflare Pages):** run
