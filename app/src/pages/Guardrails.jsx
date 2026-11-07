@@ -140,7 +140,7 @@ export default function Guardrails({ dbRef, user }) {
                       <span className="text-[10px] text-med font-mono">AWAITING APPROVAL</span>
                     )}
                     {d.verdict === 'human' && d.status !== 'pending' && (
-                      <span className="text-[10px] text-slate-500 font-mono">{d.status.toUpperCase()} by {d.decidedBy}</span>
+                      <span className="text-[10px] text-slate-500 font-mono">{(d.status || 'pending').toUpperCase()} by {d.decidedBy || '—'}</span>
                     )}
                   </div>
                 </div>

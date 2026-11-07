@@ -28,6 +28,11 @@ export const SLA = {
   'SEV-3': { ack: '4h', resolve: '72h' }
 };
 
+// Render-time SLA lookup: incident views must call this with the incident's
+// severity and never read a stored sla snapshot, so old incidents show the
+// table's current values too.
+export function slaFor(sev) { return SLA[sev] || { ack: '—', resolve: '—' }; }
+
 export const ESCALATION_LADDER = ['on-call', 'shift lead', 'CISO'];
 
 // Node health: the stored status is the truth. Overview, Model Registry and
@@ -69,9 +74,30 @@ export function verifyChain(log) {
 }
 
 // --- core -------------------------------------------------------------------
+// Migration for dbs seeded by builds before 885249b: their policyDecisions
+// were stored with NO status and NO requester. A human verdict with no
+// status is a pending approval, so backfill it — otherwise the Approvals
+// page treated it as "decided" and crashed rendering `status.toUpperCase()`
+// on undefined (blank page, whole app unmounted). Runs once, on load.
+function migrate(db) {
+  let changed = false;
+  for (const d of db.policyDecisions || []) {
+    if (d.status == null) {
+      d.status = d.verdict === 'human' ? 'pending' : 'decided';
+      changed = true;
+    }
+    if (d.requester == null) {
+      d.requester = 'system@acme-core.example';
+      changed = true;
+    }
+  }
+  return changed;
+}
+
 export function load() {
   let db = adapter.read();
-  if (!db) { db = seed(); adapter.write(db); }
+  if (!db) { db = seed(); adapter.write(db); return db; }
+  if (migrate(db)) adapter.write(db);
   return db;
 }
 

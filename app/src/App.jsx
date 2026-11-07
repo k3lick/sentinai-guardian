@@ -9,6 +9,7 @@ import ModelRegistry from './pages/ModelRegistry.jsx';
 import Siem from './pages/Siem.jsx';
 import Simple from './pages/Simple.jsx';
 import AuthGate from './auth/AuthGate.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { load, metrics } from './lib/db.js';
 
 export default function App() {
@@ -27,16 +28,20 @@ export default function App() {
         onLogout={() => { localStorage.removeItem('sentinai.session'); setUser(null); }}
         chainIntact={m.chainIntact} />
       <main className="flex-1 min-w-0 p-6 lg:p-8">
-        {page === 'overview' && <Overview db={dbRef.current} setPage={setPage} />}
-        {page === 'guardrails' && <Guardrails dbRef={dbRef} user={user} />}
-        {page === 'documents' && <Documents dbRef={dbRef} />}
-        {page === 'incidents' && <Incidents dbRef={dbRef} />}
-        {page === 'audit' && <AuditLog dbRef={dbRef} />}
-        {page === 'registry' && <ModelRegistry dbRef={dbRef} />}
-        {page === 'siem' && <Siem dbRef={dbRef} />}
-        {['orchestration', 'sla', 'approvals', 'governance', 'compliance', 'settings'].includes(page) && (
-          <Simple dbRef={dbRef} page={page} user={user} />
-        )}
+        {/* key={page} resets the boundary when navigating, so a page that
+            errored once does not stay stuck after the user moves away. */}
+        <ErrorBoundary key={page} onReset={() => setPage('overview')}>
+          {page === 'overview' && <Overview db={dbRef.current} setPage={setPage} />}
+          {page === 'guardrails' && <Guardrails dbRef={dbRef} user={user} />}
+          {page === 'documents' && <Documents dbRef={dbRef} />}
+          {page === 'incidents' && <Incidents dbRef={dbRef} />}
+          {page === 'audit' && <AuditLog dbRef={dbRef} />}
+          {page === 'registry' && <ModelRegistry dbRef={dbRef} />}
+          {page === 'siem' && <Siem dbRef={dbRef} />}
+          {['orchestration', 'sla', 'approvals', 'governance', 'compliance', 'settings'].includes(page) && (
+            <Simple dbRef={dbRef} page={page} user={user} />
+          )}
+        </ErrorBoundary>
       </main>
     </div>
   );

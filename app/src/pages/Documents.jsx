@@ -26,9 +26,23 @@ export default function Documents({ dbRef }) {
   const findings = list(db, 'findings');
   const [content, setContent] = useState('');
   const [name, setName] = useState('');
+  const [notice, setNotice] = useState('');
 
   function ingest() {
     if (!name.trim()) return;
+    // Dedupe: a document with the same name (case-insensitive) or the same
+    // non-empty content is already in the library — report it instead of
+    // adding a second copy.
+    const trimmedName = name.trim().toLowerCase();
+    const duplicate = docs.find((d) =>
+      d.name.trim().toLowerCase() === trimmedName
+      || (content.trim() !== '' && d.content === content));
+    if (duplicate) {
+      setNotice(`"${duplicate.name}" is already in the library — not added again.`);
+      setName(''); setContent('');
+      return;
+    }
+    setNotice('');
     const doc = create(db, 'documents', { name, content, status: 'clean' });
     const hits = scanDocument(doc);
     hits.forEach((f) => create(db, 'findings', f));
@@ -61,6 +75,7 @@ export default function Documents({ dbRef }) {
           <textarea className="input min-h-[100px] mb-3 font-mono text-xs" placeholder="Paste document content..."
             value={content} onChange={(e) => setContent(e.target.value)} />
           <button className="btn-primary" onClick={ingest} disabled={!name.trim()}>Scan & ingest</button>
+          {notice && <p className="text-xs text-ok mt-2">{notice}</p>}
           <div className="flex flex-wrap gap-2 mt-3">
             <button className="chip" onClick={() => { setName('leaked-credentials.txt'); setContent('AWS_SECRET_ACCESS_KEY=wJalr... password=hunter2 for staging'); }}>
               sample: leaked credentials

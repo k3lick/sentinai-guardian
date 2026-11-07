@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card, SectionTitle, SeverityBadge, Empty } from '../components/ui.jsx';
-import { create, update, list, appendAudit, SLA } from '../lib/db.js';
+import { create, update, list, appendAudit, slaFor } from '../lib/db.js';
 import { notifyDbChanged, useDb } from '../components/ui.jsx';
 
 export default function Incidents({ dbRef }) {
@@ -12,7 +12,10 @@ export default function Incidents({ dbRef }) {
 
   function openIncident() {
     if (!title.trim()) return;
-    create(db, 'incidents', { sev, title, status: 'open', sla: { ...SLA[sev] } });
+    // No SLA snapshot is stored: the list derives ack/resolve from the
+    // shared SLA table by severity at render time, so old incidents show
+    // the table's current values too.
+    create(db, 'incidents', { sev, title, status: 'open' });
     appendAudit(db, 'INCIDENT_OPENED', `${sev}: ${title}`, sev === 'SEV-1' ? 'critical' : 'high');
     setTitle('');
     notifyDbChanged();
@@ -54,7 +57,7 @@ export default function Incidents({ dbRef }) {
               <div key={i.id} className="flex items-center justify-between gap-3 py-2 border-b border-ink-700/40 last:border-0">
                 <div>
                   <p className="text-sm text-slate-200">{i.title}</p>
-                  <p className="text-xs text-slate-500">{i.sev} · ack {i.sla?.ack} · resolve {i.sla?.resolve}</p>
+                  <p className="text-xs text-slate-500">{i.sev} · ack {slaFor(i.sev).ack} · resolve {slaFor(i.sev).resolve}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <SeverityBadge level={i.sev === 'SEV-1' ? 'critical' : i.sev === 'SEV-2' ? 'high' : 'medium'} />

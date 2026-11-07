@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card, SectionTitle, Empty, SeverityBadge, StatusBadge, notifyDbChanged, useDb } from '../components/ui.jsx';
-import { list, metrics, decideVerdict, nodeStatus, SLA, ESCALATION_LADDER, TENANT, POLICY_OWNER } from '../lib/db.js';
+import { list, metrics, decideVerdict, nodeStatus, SLA, slaFor, ESCALATION_LADDER, TENANT, POLICY_OWNER } from '../lib/db.js';
 import { RULES } from '../lib/engine.js';
 
 /**
@@ -70,7 +70,7 @@ export default function Simple({ dbRef, page, user }) {
             {openIncidents.map((i) => (
               <p key={i.id} className="flex justify-between border-b border-ink-700/40 pb-1.5">
                 <span className="text-slate-300">{i.title}</span>
-                <span className="text-slate-400 font-mono">{i.sev} · ack {i.sla?.ack} · resolve {i.sla?.resolve}</span>
+                <span className="text-slate-400 font-mono">{i.sev} · ack {slaFor(i.sev).ack} · resolve {slaFor(i.sev).resolve}</span>
               </p>
             ))}
           </div>
@@ -109,7 +109,7 @@ export default function Simple({ dbRef, page, user }) {
                 <p key={d.id} className="flex flex-wrap justify-between gap-2 border-b border-ink-700/40 pb-1.5">
                   <span className="text-slate-300 font-mono truncate max-w-[60%]">{d.statement}</span>
                   <span className={d.status === 'approved' ? 'text-ok' : 'text-crit'}>
-                    {d.status.toUpperCase()} by {d.decidedBy}
+                    {(d.status || 'pending').toUpperCase()} by {d.decidedBy || '—'}
                   </span>
                 </p>
               ))}
