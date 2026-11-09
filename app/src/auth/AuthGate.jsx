@@ -11,28 +11,41 @@ import {
 
 /**
  * GitHub device-flow sign-in:
- *   idle → code (device code shown, polling) → authed / error
+ *   idle → code (device code shown, polling) → authed / expired / error
  *
  * The user enters the shown code at github.com/login/device and authorizes
  * the "SentinAI Guardian" OAuth App; this screen polls until GitHub grants
  * the token. Sign-in is via GitHub and the token stays in this browser only.
+ *
+ * Cancel is real: one AbortController covers the whole attempt (poll +
+ * profile fetch). Cancelling aborts any in-flight request, so a late
+ * response can never complete sign-in after the user cancelled.
  */
 export default function AuthGate({ onAuthed }) {
-  const [stage, setStage] = useState('idle'); // idle | code | error
+  const [stage, setStage] = useState('idle'); // idle | code | authed | expired | error
   const [device, setDevice] = useState(null); // { device_code, user_code, verification_uri, expires_in }
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const pollTimer = useRef(null);
   const pollInterval = useRef(5000);
+  const abortRef = useRef(null);
 
-  function stopPolling() {
+  function clearPollTimer() {
     if (pollTimer.current) {
       clearTimeout(pollTimer.current);
       pollTimer.current = null;
     }
   }
 
-  useEffect(() => stopPolling, []);
+  function stopPolling() {
+    clearPollTimer();
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+  }
+
+  useEffect(() => () => stopPolling(), []);
 
   function fail(message) {
     stopPolling();
@@ -41,24 +54,51 @@ export default function AuthGate({ onAuthed }) {
     setBusy(false);
   }
 
+  function failExpired(message) {
+    stopPolling();
+    setError(message);
+    setStage('expired');
+    setBusy(false);
+  }
+
   function poll(deviceCode, startedAt, expiresIn) {
     pollTimer.current = setTimeout(async () => {
+      // Capture this attempt's signal: if the user cancelled (or started
+      // over) while a request was in flight, this signal is aborted and
+      // every exit below is a silent return — never a sign-in, never a
+      // reschedule, never an error overwriting the cancelled state.
+      const signal = abortRef.current?.signal;
       try {
+        if (signal?.aborted) return;
         if (Date.now() - startedAt > expiresIn * 1000) {
-          return fail('This code has expired. Start again to get a fresh code.');
+          return failExpired('This code has expired. Start again to get a fresh code.');
         }
-        const result = await pollAccessToken(deviceCode);
+        const result = await pollAccessToken(deviceCode, signal);
+        if (signal?.aborted) return;
         if (result.status === 'ok') {
-          stopPolling();
-          const profile = await fetchGitHubUser(result.access_token);
+          // No more polls are needed, but do NOT abort here: the profile
+          // fetch below runs under this same signal and must survive.
+          clearPollTimer();
+          let profile;
+          try {
+            profile = await fetchGitHubUser(result.access_token, signal);
+          } catch (e) {
+            if (signal?.aborted || e?.name === 'AbortError') return;
+            // The token was already granted but no session was saved and
+            // the token is not recorded anywhere. Say so plainly, so the
+            // user can revoke it knowingly instead of retrying blind.
+            return fail('GitHub granted the sign-in, but your profile could not be fetched, so no session was saved. The granted token was not stored here — revoke "SentinAI Guardian" at github.com/settings/applications if you do not want it active, then start again.');
+          }
+          if (signal?.aborted) return;
           const session = { ...profile, token: result.access_token };
           saveSession(session);
+          setStage('authed');
           onAuthed({ login: profile.login, name: profile.name, avatar_url: profile.avatar_url });
           return;
         }
         if (result.status === 'error') {
           if (result.error === 'expired_token') {
-            return fail('This code has expired. Start again to get a fresh code.');
+            return failExpired('This code has expired. Start again to get a fresh code.');
           }
           if (result.error === 'access_denied') {
             return fail('Authorization was denied on GitHub. Start again when ready.');
@@ -67,7 +107,8 @@ export default function AuthGate({ onAuthed }) {
         }
         if (result.slow_down) pollInterval.current = Math.min(pollInterval.current * 2, 30000);
         poll(deviceCode, startedAt, expiresIn);
-      } catch {
+      } catch (e) {
+        if (signal?.aborted || e?.name === 'AbortError') return;
         fail('Could not reach GitHub. Check your connection and start again.');
       }
     }, pollInterval.current);
@@ -78,6 +119,7 @@ export default function AuthGate({ onAuthed }) {
     setBusy(true);
     try {
       const data = await requestDeviceCode();
+      abortRef.current = new AbortController();
       setDevice(data);
       setStage('code');
       setBusy(false);
@@ -94,6 +136,7 @@ export default function AuthGate({ onAuthed }) {
     setDevice(null);
     setError('');
     setStage('idle');
+    setBusy(false);
   }
 
   const expiresMinutes = device?.expires_in ? Math.round(device.expires_in / 60) : null;
@@ -143,6 +186,23 @@ export default function AuthGate({ onAuthed }) {
               <p className="text-sm text-slate-400 text-center">Waiting for GitHub authorization…</p>
               <button onClick={restart} className="btn-ghost w-full flex items-center justify-center gap-1.5">
                 <X className="w-3 h-3" /> Cancel
+              </button>
+            </>
+          )}
+
+          {stage === 'authed' && (
+            <>
+              <h2 className="text-lg font-semibold text-slate-100">Signed in</h2>
+              <p className="text-sm text-slate-400">Opening SentinAI…</p>
+            </>
+          )}
+
+          {stage === 'expired' && (
+            <>
+              <h2 className="text-lg font-semibold text-slate-100">This code expired</h2>
+              <p className="text-sm text-crit">{error}</p>
+              <button onClick={restart} className="btn-primary w-full flex items-center justify-center gap-2">
+                <RotateCcw className="w-4 h-4" /> Start again
               </button>
             </>
           )}

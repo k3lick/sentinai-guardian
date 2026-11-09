@@ -142,6 +142,13 @@ export function create(db, coll, record) {
 export function update(db, coll, id, patch) {
   const rec = (db[coll] || []).find((r) => r.id === id);
   if (!rec) return null;
+  // policyDecisions.status is allow-listed: it may ONLY change through
+  // decideVerdict(). A generic patch must never flip an approval's status,
+  // or separation of duties and the audit trail could be bypassed.
+  if (coll === 'policyDecisions' && patch
+      && Object.prototype.hasOwnProperty.call(patch, 'status')) {
+    throw new Error('policyDecisions.status may only change through decideVerdict().');
+  }
   Object.assign(rec, patch);
   save(db);
   return rec;
@@ -173,15 +180,20 @@ export function recordVerdict(db, v, requester) {
   return decision;
 }
 
-// Decide a pending human verdict. Enforces separation of duties: the
-// requester can never approve or reject their own request. A decision
-// updates the record, writes a SIEM event and an audit-log entry, so the
-// decision shows up in the Audit Log and the SIEM stream.
+// Decide a pending human verdict. This is the ONLY write path for a
+// policyDecision's status — update() refuses status patches on this
+// collection. Enforces separation of duties: the requester can never
+// approve or reject their own request. A decision updates the record,
+// writes a SIEM event and an audit-log entry, so the decision shows up
+// in the Audit Log and the SIEM stream.
 export function decideVerdict(db, id, decision, approver) {
   const rec = (db.policyDecisions || []).find((r) => r.id === id);
   if (!rec) return { ok: false, error: 'Approval item not found.' };
   if (rec.verdict !== 'human' || rec.status !== 'pending') {
     return { ok: false, error: 'This verdict is no longer pending.' };
+  }
+  if (decision !== 'approved' && decision !== 'rejected') {
+    return { ok: false, error: 'Decision must be "approved" or "rejected".' };
   }
   if (rec.requester && approver
       && rec.requester.toLowerCase() === approver.toLowerCase()) {

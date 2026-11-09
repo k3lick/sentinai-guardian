@@ -43,7 +43,7 @@ export async function requestDeviceCode() {
  *   { status: 'error', error }                      — expired_token /
  *     access_denied / incorrect_device_code / other
  */
-export async function pollAccessToken(device_code) {
+export async function pollAccessToken(device_code, signal) {
   const res = await fetch(`${RELAY_BASE}/access_token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -52,6 +52,7 @@ export async function pollAccessToken(device_code) {
       device_code,
       grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
     }),
+    signal,
   });
   if (!res.ok) throw new Error(`Token request failed (${res.status}).`);
   const data = await res.json();
@@ -71,9 +72,10 @@ export async function pollAccessToken(device_code) {
 }
 
 /** Fetch the signed-in user's profile. Returns { login, name, avatar_url }. */
-export async function fetchGitHubUser(token) {
+export async function fetchGitHubUser(token, signal) {
   const res = await fetch('https://api.github.com/user', {
     headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' },
+    signal,
   });
   if (!res.ok) throw new Error(`GitHub profile request failed (${res.status}).`);
   const data = await res.json();
